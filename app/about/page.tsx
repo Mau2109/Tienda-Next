@@ -15,9 +15,9 @@ export default function AboutPage() {
               </div>
               <div className="p-4 space-y-4 text-gray-300">
                 <p>
-                  Fundada en 2020, Mi Tienda nació con la visión de ofrecer productos de alta calidad a precios
-                  accesibles. Lo que comenzó como un pequeño emprendimiento se ha convertido en una tienda de referencia
-                  en el mercado.
+                  Fundada en Mayo del 2025, Mi Tienda nació con la visión de ofrecer productos de alta calidad a precios
+                  accesibles un tipo de relacion calidad-precio na mentira es para un proyecto escolar xD. Lo que comenzó como un pequeño emprendimiento se ha convertido en una tienda de referencia
+                  en el mercado mas pro que el Amazon o el Mercado Libre.
                 </p>
                 <p>
                   Nuestro compromiso con la calidad y la satisfacción del cliente nos ha permitido crecer y expandir
@@ -35,10 +35,6 @@ export default function AboutPage() {
                 <p>
                   Nuestra misión es proporcionar a nuestros clientes una experiencia de compra excepcional, ofreciendo
                   productos innovadores y de calidad que mejoren su vida cotidiana.
-                </p>
-                <p>
-                  Nos esforzamos por mantener la excelencia en cada aspecto de nuestro negocio, desde la selección de
-                  productos hasta el servicio postventa.
                 </p>
               </div>
             </div>
@@ -78,21 +74,24 @@ export default function AboutPage() {
             <div className="border border-gray-800 rounded-lg bg-gray-950/50">
               <div className="p-4 border-b border-gray-800">
                 <h2 className="font-semibold text-lg">Contacto</h2>
-                <p className="text-sm text-gray-400">Estamos aquí para ayudarte</p>
               </div>
               <div className="p-4">
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
                     <span className="text-purple-400">📍</span>
-                    <span className="text-gray-300">Av. Siempre Viva 123, Springfield, EE.UU.</span>
+                    <span className="text-gray-300">Av. Dr. Modesto Seara, Acatlima, Huajuapan de Leon, Oax. Mex.</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <span className="text-blue-400">📞</span>
-                    <span className="text-gray-300">+1 234 567 890</span>
+                    <span className="text-gray-300">+953 194 15 89</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <span className="text-purple-400">📧</span>
-                    <span className="text-gray-300">contacto@mitienda.com</span>
+                    <span className="text-gray-300">oorm030921@gs.utm.mx</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="text-purple-400">📧</span>
+                    <span className="text-gray-300">mauriosorio444@gmail.com</span>
                   </li>
                 </ul>
               </div>

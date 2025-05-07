@@ -5,7 +5,7 @@ export default function Sidebar() {
     <aside className="w-64 bg-gray-950 text-white h-screen flex flex-col">
       <div className="p-4 border-b border-gray-800">
         <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500">
-          Mi Tienda
+          Shooping
         </h1>
       </div>
       <nav className="flex-1 p-4">
@@ -49,7 +49,7 @@ export default function Sidebar() {
         </ul>
       </nav>
       <div className="p-4 border-t border-gray-800">
-        <p className="text-xs text-gray-400">© 2024 Mi Tienda Online</p>
+        <p className="text-xs text-gray-400">© 2025 Mau Osorio</p>
       </div>
     </aside>
   )
