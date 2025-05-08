@@ -1,5 +1,10 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
+import { useState, useEffect } from "react"
+import { useParams } from "next/navigation"
+import { useCart } from "@/context/cart-context"
 
 // Tipo para los productos de la API
 type Product = {
@@ -15,43 +20,65 @@ type Product = {
   }
 }
 
-// Función para obtener un producto por ID
-async function getProduct(id: string): Promise<Product | null> {
-  try {
-    const response = await fetch(`https://fakestoreapi.com/products/${id}`, { next: { revalidate: 3600 } })
+export default function ProductoDetallePage() {
+  const [producto, setProducto] = useState<Product | null>(null)
+  const [productosRelacionados, setProductosRelacionados] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const { id } = useParams() as { id: string }
+  const { addItem } = useCart()
 
-    if (!response.ok) {
-      throw new Error("Error al cargar el producto")
+  useEffect(() => {
+    async function loadProduct() {
+      setLoading(true)
+      try {
+        const response = await fetch(`https://fakestoreapi.com/products/${id}`)
+
+        if (!response.ok) {
+          throw new Error("Error al cargar el producto")
+        }
+
+        const data = await response.json()
+        setProducto(data)
+
+        // Cargar productos relacionados
+        if (data.category) {
+          const relatedResponse = await fetch(
+            `https://fakestoreapi.com/products/category/${encodeURIComponent(data.category)}`,
+          )
+          const relatedData = await relatedResponse.json()
+          // Filtrar el producto actual y limitar a 3
+          setProductosRelacionados(relatedData.filter((p: Product) => p.id.toString() !== id).slice(0, 3))
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    return response.json()
-  } catch (error) {
-    console.error("Error fetching product:", error)
-    return null
+    loadProduct()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="space-y-8">
+        <div className="h-4 bg-gray-800 rounded w-1/3"></div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-gray-800 rounded-lg h-80 animate-pulse"></div>
+
+          <div className="space-y-4">
+            <div className="h-8 bg-gray-800 rounded w-3/4"></div>
+            <div className="h-4 bg-gray-800 rounded w-1/4"></div>
+            <div className="h-8 bg-gray-800 rounded w-1/5"></div>
+            <div className="h-6 bg-gray-800 rounded w-1/6"></div>
+            <div className="h-24 bg-gray-800 rounded"></div>
+            <div className="h-12 bg-gray-800 rounded"></div>
+          </div>
+        </div>
+      </div>
+    )
   }
-}
-
-// Función para obtener productos relacionados (de la misma categoría)
-async function getRelatedProducts(category: string, currentId: string): Promise<Product[]> {
-  try {
-    const response = await fetch(`https://fakestoreapi.com/products/category/${encodeURIComponent(category)}`, {
-      next: { revalidate: 3600 },
-    })
-
-    if (!response.ok) {
-      throw new Error("Error al cargar productos relacionados")
-    }
-
-    const products: Product[] = await response.json()
-    return products.filter((product) => product.id.toString() !== currentId).slice(0, 3)
-  } catch (error) {
-    console.error("Error fetching related products:", error)
-    return []
-  }
-}
-
-export default async function ProductoDetallePage({ params }: { params: { id: string } }) {
-  const producto = await getProduct(params.id)
 
   if (!producto) {
     return (
@@ -64,8 +91,6 @@ export default async function ProductoDetallePage({ params }: { params: { id: st
       </div>
     )
   }
-
-  const productosRelacionados = await getRelatedProducts(producto.category, params.id)
 
   return (
     <div className="space-y-8">
@@ -108,7 +133,10 @@ export default async function ProductoDetallePage({ params }: { params: { id: st
           <p className="text-gray-300">{producto.description}</p>
 
           <div className="pt-4">
-            <button className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium">
+            <button
+              className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium"
+              onClick={() => addItem(producto)}
+            >
               Añadir al carrito
             </button>
           </div>
@@ -136,12 +164,20 @@ export default async function ProductoDetallePage({ params }: { params: { id: st
                 <div className="p-4">
                   <h3 className="font-semibold text-white line-clamp-1">{producto.title}</h3>
                   <p className="text-xl font-bold mt-2 text-purple-400">${producto.price}</p>
-                  <Link
-                    href={`/productos/${producto.id}`}
-                    className="block w-full mt-4 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md text-center"
-                  >
-                    Ver detalles
-                  </Link>
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
+                      onClick={() => addItem(producto)}
+                    >
+                      Añadir
+                    </button>
+                    <Link
+                      href={`/productos/${producto.id}`}
+                      className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md text-sm"
+                    >
+                      Ver
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

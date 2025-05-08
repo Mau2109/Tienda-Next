@@ -1,15 +1,13 @@
+"use client"
+
 import Link from "next/link"
+import Image from "next/image"
+import { useCart } from "@/context/cart-context"
 
 export default function CarritoPage() {
-  // Datos de ejemplo para el carrito
-  const itemsCarrito = [
-    { id: 1, nombre: "Auriculares Bluetooth", precio: 89.99, cantidad: 1 },
-    { id: 2, nombre: "Camiseta Premium", precio: 29.99, cantidad: 2 },
-  ]
-
-  const subtotal = itemsCarrito.reduce((total, item) => total + item.precio * item.cantidad, 0)
-  const envio = 4.99
-  const total = subtotal + envio
+  const { items, updateItem, removeItem, clearItems, total } = useCart()
+  const envio = items.length > 0 ? 4.99 : 0
+  const totalFinal = total + envio
 
   return (
     <div className="space-y-6">
@@ -18,27 +16,58 @@ export default function CarritoPage() {
         <p className="text-gray-400">Revisa y finaliza tu compra</p>
       </div>
 
-      {itemsCarrito.length > 0 ? (
+      {items.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
-            {itemsCarrito.map((item) => (
-              <div key={item.id} className="border border-gray-800 rounded-lg bg-gray-950/50 p-4">
+            {items.map((item) => (
+              <div key={item.productId} className="border border-gray-800 rounded-lg bg-gray-950/50 p-4">
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="relative h-24 w-24 flex-shrink-0 bg-gray-800 rounded-md overflow-hidden flex items-center justify-center text-gray-500">
-                    {item.nombre}
+                  <div className="relative h-24 w-24 flex-shrink-0 bg-white rounded-md overflow-hidden">
+                    <Image
+                      src={item.image || "/placeholder.svg"}
+                      alt={item.title}
+                      fill
+                      className="object-contain p-2"
+                    />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-medium text-white">{item.nombre}</h3>
-                    <p className="text-sm text-gray-400 mb-2">Cantidad: {item.cantidad}</p>
-                    <p className="font-bold text-purple-400">${item.precio}</p>
+                    <h3 className="font-medium text-white">{item.title}</h3>
+                    <div className="flex items-center gap-3 mt-2">
+                      <button
+                        className="w-8 h-8 flex items-center justify-center rounded-md bg-gray-800 hover:bg-gray-700 text-white"
+                        onClick={() => updateItem(item.productId, item.quantity - 1)}
+                      >
+                        -
+                      </button>
+                      <span className="text-white">{item.quantity}</span>
+                      <button
+                        className="w-8 h-8 flex items-center justify-center rounded-md bg-gray-800 hover:bg-gray-700 text-white"
+                        onClick={() => updateItem(item.productId, item.quantity + 1)}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <p className="font-bold text-purple-400 mt-2">${item.price} c/u</p>
+                    <p className="text-sm text-gray-400">Subtotal: ${(item.price * item.quantity).toFixed(2)}</p>
                   </div>
-                  <button className="text-red-500 hover:text-red-400 self-start">
+                  <button
+                    className="text-red-500 hover:text-red-400 self-start"
+                    onClick={() => removeItem(item.productId)}
+                  >
                     🗑️
                     <span className="sr-only">Eliminar</span>
                   </button>
                 </div>
               </div>
             ))}
+            <div className="flex justify-between mt-4 p-4 border border-gray-800 rounded-lg bg-gray-950/50">
+              <button className="text-red-500 hover:text-red-400 flex items-center gap-2" onClick={clearItems}>
+                🗑️ Vaciar carrito
+              </button>
+              <Link href="/productos" className="text-blue-400 hover:text-blue-300 flex items-center gap-2">
+                🛍️ Seguir comprando
+              </Link>
+            </div>
           </div>
 
           <div>
@@ -49,7 +78,7 @@ export default function CarritoPage() {
               <div className="p-4 space-y-4">
                 <div className="flex justify-between">
                   <span className="text-gray-400">Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>${total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-400">Envío</span>
@@ -58,7 +87,7 @@ export default function CarritoPage() {
                 <hr className="border-gray-800" />
                 <div className="flex justify-between font-bold">
                   <span>Total</span>
-                  <span className="text-purple-400">${total.toFixed(2)}</span>
+                  <span className="text-purple-400">${totalFinal.toFixed(2)}</span>
                 </div>
               </div>
               <div className="p-4">

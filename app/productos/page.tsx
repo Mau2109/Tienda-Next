@@ -1,5 +1,10 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
+import { useState, useEffect } from "react"
+import { useCart } from "@/context/cart-context"
+import { useSearchParams } from "next/navigation"
 
 // Tipo para los productos de la API
 type Product = {
@@ -15,40 +20,40 @@ type Product = {
   }
 }
 
-// Función para obtener todos los productos
-async function getProducts(): Promise<Product[]> {
-  try {
-    const response = await fetch("https://fakestoreapi.com/products", { next: { revalidate: 3600 } })
+export default function ProductosPage() {
+  const [productos, setProductos] = useState<Product[]>([])
+  const [categorias, setCategorias] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+  const { addItem } = useCart()
+  const searchParams = useSearchParams()
+  const categoriaFiltro = searchParams.get("categoria")
 
-    if (!response.ok) {
-      throw new Error("Error al cargar los productos")
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true)
+      try {
+        // Cargar categorías
+        const catResponse = await fetch("https://fakestoreapi.com/products/categories")
+        const catData = await catResponse.json()
+        setCategorias(catData)
+
+        // Cargar productos (filtrados o todos)
+        const url = categoriaFiltro
+          ? `https://fakestoreapi.com/products/category/${encodeURIComponent(categoriaFiltro)}`
+          : "https://fakestoreapi.com/products"
+
+        const prodResponse = await fetch(url)
+        const prodData = await prodResponse.json()
+        setProductos(prodData)
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    return response.json()
-  } catch (error) {
-    console.error("Error fetching products:", error)
-    return [] // Devolvemos array vacío en caso de error
-  }
-}
-
-// Función para obtener categorías
-async function getCategories(): Promise<string[]> {
-  try {
-    const response = await fetch("https://fakestoreapi.com/products/categories", { next: { revalidate: 3600 } })
-
-    if (!response.ok) {
-      throw new Error("Error al cargar las categorías")
-    }
-
-    return response.json()
-  } catch (error) {
-    console.error("Error fetching categories:", error)
-    return [] // Devolvemos array vacío en caso de error
-  }
-}
-
-export default async function ProductosPage() {
-  const [productos, categorias] = await Promise.all([getProducts(), getCategories()])
+    loadData()
+  }, [categoriaFiltro])
 
   return (
     <div className="space-y-6">
@@ -59,11 +64,17 @@ export default async function ProductosPage() {
 
       {/* Filtro de categorías */}
       <div className="flex flex-wrap gap-2 pb-4">
+        <Link
+          href="/productos"
+          className={`px-3 py-1 ${!categoriaFiltro ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"} rounded-full text-sm text-gray-200`}
+        >
+          Todos
+        </Link>
         {categorias.map((categoria) => (
           <Link
             key={categoria}
             href={`/productos?categoria=${categoria}`}
-            className="px-3 py-1 bg-gray-800 hover:bg-gray-700 rounded-full text-sm text-gray-200"
+            className={`px-3 py-1 ${categoriaFiltro === categoria ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"} rounded-full text-sm text-gray-200`}
           >
             {categoria}
           </Link>
@@ -71,8 +82,24 @@ export default async function ProductosPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {productos.length > 0
-          ? productos.map((producto) => (
+        {loading
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={index}
+                className="border border-gray-800 rounded-lg overflow-hidden bg-gray-950/50 animate-pulse"
+              >
+                <div className="h-48 bg-gray-800"></div>
+                <div className="p-4 space-y-3">
+                  <div className="h-5 bg-gray-800 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-800 rounded w-1/4"></div>
+                  <div className="h-4 bg-gray-800 rounded"></div>
+                  <div className="h-4 bg-gray-800 rounded"></div>
+                  <div className="h-6 bg-gray-800 rounded w-1/4 mt-2"></div>
+                  <div className="h-10 bg-gray-800 rounded mt-4"></div>
+                </div>
+              </div>
+            ))
+          : productos.map((producto) => (
               <div
                 key={producto.id}
                 className="border border-gray-800 rounded-lg overflow-hidden bg-gray-950/50 hover:bg-gray-900/50 transition-colors"
@@ -98,7 +125,10 @@ export default async function ProductosPage() {
                   </div>
                   <p className="text-xl font-bold mt-2 text-purple-400">${producto.price}</p>
                   <div className="flex gap-2 mt-4">
-                    <button className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md">
+                    <button
+                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+                      onClick={() => addItem(producto)}
+                    >
                       Añadir al carrito
                     </button>
                     <Link
@@ -108,23 +138,6 @@ export default async function ProductosPage() {
                       Ver detalles
                     </Link>
                   </div>
-                </div>
-              </div>
-            ))
-          : // Fallback en caso de error o mientras carga
-            Array.from({ length: 6 }).map((_, index) => (
-              <div
-                key={index}
-                className="border border-gray-800 rounded-lg overflow-hidden bg-gray-950/50 animate-pulse"
-              >
-                <div className="h-48 bg-gray-800"></div>
-                <div className="p-4 space-y-3">
-                  <div className="h-5 bg-gray-800 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-800 rounded w-1/4"></div>
-                  <div className="h-4 bg-gray-800 rounded"></div>
-                  <div className="h-4 bg-gray-800 rounded"></div>
-                  <div className="h-6 bg-gray-800 rounded w-1/4 mt-2"></div>
-                  <div className="h-10 bg-gray-800 rounded mt-4"></div>
                 </div>
               </div>
             ))}
