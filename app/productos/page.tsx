@@ -59,14 +59,18 @@ export default function ProductosPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold mb-2">Nuestros Productos</h1>
-        <p className="text-gray-400">Explora nuestra selección de productos de alta calidad</p>
+        <p className="text-gray-500 dark:text-gray-400">Explora nuestra selección de productos de alta calidad</p>
       </div>
 
       {/* Filtro de categorías */}
       <div className="flex flex-wrap gap-2 pb-4">
         <Link
           href="/productos"
-          className={`px-3 py-1 ${!categoriaFiltro ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"} rounded-full text-sm text-gray-200`}
+          className={`px-3 py-1 ${
+            !categoriaFiltro
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
+          } rounded-full text-sm transition-colors`}
         >
           Todos
         </Link>
@@ -74,7 +78,11 @@ export default function ProductosPage() {
           <Link
             key={categoria}
             href={`/productos?categoria=${categoria}`}
-            className={`px-3 py-1 ${categoriaFiltro === categoria ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"} rounded-full text-sm text-gray-200`}
+            className={`px-3 py-1 ${
+              categoriaFiltro === categoria
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
+            } rounded-full text-sm transition-colors`}
           >
             {categoria}
           </Link>
@@ -86,25 +94,25 @@ export default function ProductosPage() {
           ? Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="border border-gray-800 rounded-lg overflow-hidden bg-gray-950/50 animate-pulse"
+                className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-gray-800 animate-pulse"
               >
-                <div className="h-48 bg-gray-800"></div>
+                <div className="h-48 bg-gray-200 dark:bg-gray-700"></div>
                 <div className="p-4 space-y-3">
-                  <div className="h-5 bg-gray-800 rounded w-3/4"></div>
-                  <div className="h-4 bg-gray-800 rounded w-1/4"></div>
-                  <div className="h-4 bg-gray-800 rounded"></div>
-                  <div className="h-4 bg-gray-800 rounded"></div>
-                  <div className="h-6 bg-gray-800 rounded w-1/4 mt-2"></div>
-                  <div className="h-10 bg-gray-800 rounded mt-4"></div>
+                  <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mt-2"></div>
+                  <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded mt-4"></div>
                 </div>
               </div>
             ))
           : productos.map((producto) => (
               <div
                 key={producto.id}
-                className="border border-gray-800 rounded-lg overflow-hidden bg-gray-950/50 hover:bg-gray-900/50 transition-colors"
+                className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <div className="relative h-48 bg-white">
+                <div className="relative h-48 bg-white dark:bg-gray-200">
                   <Image
                     src={producto.image || "/placeholder.svg"}
                     alt={producto.title}
@@ -113,27 +121,27 @@ export default function ProductosPage() {
                   />
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold text-white line-clamp-1">{producto.title}</h3>
-                  <p className="text-sm text-gray-400">{producto.category}</p>
-                  <p className="text-gray-300 my-2 line-clamp-2">{producto.description}</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-1">{producto.title}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{producto.category}</p>
+                  <p className="text-gray-700 dark:text-gray-300 my-2 line-clamp-2">{producto.description}</p>
                   <div className="flex items-center gap-2 mb-2">
                     <div className="flex items-center">
-                      <span className="text-yellow-400">★</span>
-                      <span className="text-gray-300 text-sm ml-1">{producto.rating.rate}</span>
+                      <span className="text-yellow-500">★</span>
+                      <span className="text-gray-700 dark:text-gray-300 text-sm ml-1">{producto.rating.rate}</span>
                     </div>
-                    <span className="text-gray-400 text-sm">({producto.rating.count} reseñas)</span>
+                    <span className="text-gray-500 dark:text-gray-400 text-sm">({producto.rating.count} reseñas)</span>
                   </div>
-                  <p className="text-xl font-bold mt-2 text-purple-400">${producto.price}</p>
+                  <p className="text-xl font-bold mt-2 text-purple-600 dark:text-purple-400">${producto.price}</p>
                   <div className="flex gap-2 mt-4">
                     <button
-                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+                      className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
                       onClick={() => addItem(producto)}
                     >
                       Añadir al carrito
                     </button>
                     <Link
                       href={`/productos/${producto.id}`}
-                      className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-md"
+                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-white rounded-md transition-colors"
                     >
                       Ver detalles
                     </Link>

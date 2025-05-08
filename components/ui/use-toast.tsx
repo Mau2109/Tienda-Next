@@ -81,7 +81,7 @@ export function Toaster() {
             ${toast.visible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}
             ${toast.variant === "destructive" ? "bg-red-600 text-white" : ""}
             ${toast.variant === "success" ? "bg-green-600 text-white" : ""}
-            ${toast.variant === "default" ? "bg-gray-800 text-white" : ""}
+            ${toast.variant === "default" ? "bg-white text-gray-900 dark:bg-gray-800 dark:text-white" : ""}
           `}
         >
           <div className="font-semibold">{toast.title}</div>

@@ -1,5 +1,4 @@
 import type { Config } from "tailwindcss"
-
 const config: Config = {
   darkMode: "class",
   content: [
@@ -46,6 +45,7 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Definimos directamente los colores que necesitamos
         purple: {
           400: "#c084fc",
           500: "#a855f7",
