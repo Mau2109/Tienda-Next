@@ -2,9 +2,44 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams } from "next/navigation"
 import { useCart } from "@/context/cart-context"
+import { useToast } from "@/components/ui/use-toast"
+
+// Datos de respaldo para cuando la API no está disponible
+const FALLBACK_PRODUCTS = {
+  "1": {
+    id: 1,
+    title: "Fjallraven - Foldsack No. 1 Backpack",
+    price: 109.95,
+    description:
+      "Your perfect pack for everyday use and walks in the forest. Stash your laptop (up to 15 inches) in the padded sleeve, your everyday",
+    category: "men's clothing",
+    image: "https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg",
+    rating: { rate: 3.9, count: 120 },
+  },
+  "2": {
+    id: 2,
+    title: "Mens Casual Premium Slim Fit T-Shirts",
+    price: 22.3,
+    description:
+      "Slim-fitting style, contrast raglan long sleeve, three-button henley placket, light weight & soft fabric for breathable and comfortable wearing.",
+    category: "men's clothing",
+    image: "https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._SY._UY_.jpg",
+    rating: { rate: 4.1, count: 259 },
+  },
+  "3": {
+    id: 3,
+    title: "Mens Cotton Jacket",
+    price: 55.99,
+    description:
+      "Great outerwear jackets for Spring/Autumn/Winter, suitable for many occasions, such as working, hiking, camping, mountain/rock climbing, cycling, traveling or other outdoors.",
+    category: "men's clothing",
+    image: "https://fakestoreapi.com/img/71li-ujtlUL._AC_UX679_.jpg",
+    rating: { rate: 4.7, count: 500 },
+  },
+}
 
 // Tipo para los productos de la API
 type Product = {
@@ -23,37 +58,69 @@ type Product = {
 export default function ProductoDetallePage() {
   const [producto, setProducto] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<boolean>(false)
   const { id } = useParams() as { id: string }
   const { addItem } = useCart()
   const [cantidad, setCantidad] = useState(1)
+  const { toast } = useToast()
 
-  useEffect(() => {
-    async function loadProduct() {
-      setLoading(true)
-      try {
-        const response = await fetch(`https://fakestoreapi.com/products/${id}`)
+  // Función para cargar el producto con manejo de errores mejorado
+  const fetchProduct = useCallback(async () => {
+    if (!id) return
 
-        if (!response.ok) {
-          throw new Error("Error al cargar el producto")
-        }
+    setLoading(true)
+    setError(false)
 
+    try {
+      const response = await fetch(`https://fakestoreapi.com/products/${id}`, {
+        next: { revalidate: 3600 }, // Revalidar cada hora
+        signal: AbortSignal.timeout(5000), // 5 segundos de timeout
+      })
+
+      if (response.ok) {
         const data = await response.json()
         setProducto(data)
-      } catch (error) {
-        console.error("Error fetching product:", error)
-      } finally {
-        setLoading(false)
+      } else {
+        throw new Error(`Error al cargar el producto: ${response.status}`)
       }
-    }
+    } catch (err) {
+      console.error("Error fetching product:", err)
+      setError(true)
 
-    loadProduct()
+      // Usar datos de respaldo si están disponibles para este ID
+      if (FALLBACK_PRODUCTS[id as keyof typeof FALLBACK_PRODUCTS]) {
+        setProducto(FALLBACK_PRODUCTS[id as keyof typeof FALLBACK_PRODUCTS])
+      }
+    } finally {
+      setLoading(false)
+    }
   }, [id])
+
+  // Cargar el producto solo cuando cambia el ID
+  useEffect(() => {
+    fetchProduct()
+  }, [fetchProduct])
 
   const handleAddToCart = () => {
     if (producto) {
-      // Añadir la cantidad seleccionada del producto al carrito
-      for (let i = 0; i < cantidad; i++) {
-        addItem(producto)
+      try {
+        // Añadir el producto con la cantidad seleccionada en una sola operación
+        addItem({
+          ...producto,
+          quantity: cantidad, // Añadimos la cantidad seleccionada
+        })
+
+        toast({
+          title: "Producto añadido",
+          description: `${producto.title} (${cantidad} unidad${cantidad > 1 ? "es" : ""}) añadido al carrito`,
+        })
+      } catch (err) {
+        console.error("Error al añadir al carrito:", err)
+        toast({
+          title: "Error",
+          description: "No se pudo añadir el producto al carrito. Inténtalo de nuevo.",
+          variant: "destructive",
+        })
       }
     }
   }
@@ -93,6 +160,13 @@ export default function ProductoDetallePage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
+      {error && (
+        <div className="p-4 mb-4 text-sm text-yellow-800 bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-200 rounded-lg">
+          Estamos experimentando problemas para conectar con nuestro servidor. Mostrando información disponible
+          localmente.
+        </div>
+      )}
+
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
         <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-300">
@@ -111,7 +185,18 @@ export default function ProductoDetallePage() {
         {/* Imagen del producto */}
         <div className="bg-white dark:bg-gray-200 rounded-lg p-8 flex items-center justify-center shadow-md">
           <div className="relative h-80 w-full">
-            <Image src={producto.image || "/placeholder.svg"} alt={producto.title} fill className="object-contain" />
+            <Image
+              src={producto.image || "/placeholder.svg"}
+              alt={producto.title}
+              fill
+              className="object-contain"
+              loading="eager"
+              onError={(e) => {
+                // Fallback para imágenes que no cargan
+                const target = e.target as HTMLImageElement
+                target.src = "/placeholder.svg"
+              }}
+            />
           </div>
         </div>
 

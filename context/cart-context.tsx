@@ -71,26 +71,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
   async function addItem(product: any) {
     try {
       setIsLoading(true)
+
+      // Determinar la cantidad a añadir (por defecto 1 si no se especifica)
+      const quantityToAdd = product.quantity || 1
+
+      // Buscar si el producto ya existe en el carrito
       const existingItem = items.find((item) => item.productId === product.id)
 
       if (existingItem) {
-        await updateItem(product.id, existingItem.quantity + 1)
+        // Si existe, actualizar la cantidad sumando la nueva cantidad
+        await updateItem(product.id, existingItem.quantity + quantityToAdd)
         return
       }
 
+      // Si no existe, crear un nuevo item con la cantidad especificada
       const newItem = await addToCart({
         productId: product.id,
         title: product.title,
         price: product.price,
         image: product.image,
-        quantity: 1,
+        quantity: quantityToAdd,
       })
 
       if (newItem) {
         setItems((prev) => [...prev, newItem])
         toast({
           title: "Producto añadido",
-          description: `${product.title} ha sido añadido al carrito`,
+          description: `${product.title} ha sido añadido al carrito (${quantityToAdd} unidad${quantityToAdd > 1 ? "es" : ""})`,
         })
       }
     } catch (error) {
